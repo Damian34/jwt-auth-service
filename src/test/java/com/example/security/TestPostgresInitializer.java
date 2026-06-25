@@ -7,7 +7,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class TestPostgresInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.4-alpine")
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18.0-alpine")
             .withDatabaseName("testdb")
             .withUsername("testuser")
             .withPassword("testpassword")

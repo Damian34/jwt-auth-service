@@ -9,7 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 class ApplicationContextTest {
 
     @Test
-    void springContextTest() {
+    void contextTest() {
         // test context only
     }
 }

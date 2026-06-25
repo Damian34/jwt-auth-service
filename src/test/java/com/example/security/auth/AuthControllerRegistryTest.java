@@ -3,14 +3,14 @@ package com.example.security.auth;
 import com.example.security.TestPostgresInitializer;
 import com.example.security.TestUserHelper;
 import com.example.security.auth.api.protocol.request.RegistryRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,7 +62,8 @@ class AuthControllerRegistryTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").value("must not be blank"));
+                .andExpect(jsonPath("$.password")
+                        .value("must not be blank"));
     }
 
     @ParameterizedTest
@@ -76,7 +77,8 @@ class AuthControllerRegistryTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.password").value("Password must have at least 6 characters"));
+                .andExpect(jsonPath("$.password")
+                        .value("Password must have at least 6 characters"));
     }
 
     @Test

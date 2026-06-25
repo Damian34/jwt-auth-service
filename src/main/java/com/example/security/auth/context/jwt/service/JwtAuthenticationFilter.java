@@ -1,14 +1,12 @@
 package com.example.security.auth.context.jwt.service;
 
 import com.example.security.auth.context.authorization.service.AuthorizationService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,9 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
         if (authorizationService.isPermittedPath(request.getRequestURI())) {
             filterChain.doFilter(request, response);
@@ -43,15 +42,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String authHeader = request.getHeader("Authorization");
+        String bearer = "Bearer ";
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(bearer)) {
             filterChain.doFilter(request, response);
-            createErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing", null);
+            appendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Authorization header is missing", null);
             return;
         }
 
         try {
-            String jwt = authHeader.substring(7);
+            String jwt = authHeader.substring(bearer.length());
             String username = jwtTokenService.extractUsername(jwt);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -60,16 +60,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (authToken != null) {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
-                    createErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Expired JWT token", null);
+                    appendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Expired JWT token", null);
                     return;
                 }
             }
 
             filterChain.doFilter(request, response);
         } catch (JwtException e) {
-            createErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token", e);
+            appendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token", e);
         } catch (Exception e) {
-            createErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error", e);
+            appendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error", e);
         }
     }
 
@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void createErrorResponse(HttpServletResponse response, int status, String message, Exception e) throws IOException {
+    private void appendErrorResponse(HttpServletResponse response, int status, String message, Exception e) throws IOException {
         String logMessage = message;
         if (e != null) {
             logMessage += ": " + e.getClass().getSimpleName() + ": " + e.getMessage();

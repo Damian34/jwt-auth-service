@@ -1,11 +1,10 @@
 package com.example.security.auth.context.user.service;
 
 import com.example.security.auth.api.protocol.request.RegistryRequest;
-import com.example.security.auth.context.hashing.service.SaltPepperHashService;
+import com.example.security.auth.context.hashing.service.HashingPasswordService;
 import com.example.security.auth.context.user.validator.UserValidator;
 import com.example.security.shared.model.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -15,23 +14,18 @@ import java.util.Set;
 public class UserRegistryService {
     private final UserAuthService userAuthService;
     private final UserValidator userValidator;
-    private final PasswordEncoder passwordEncoder;
-    private final SaltPepperHashService hashService;
+    private final HashingPasswordService hashingService;
 
     public String registerUser(RegistryRequest request) {
         userValidator.validateUsername(request.username());
         User user = new User();
-        char[] salt = hashService.generateSalt();
+        char[] salt = hashingService.generateSalt();
+        String enrichedPassword = hashingService.enrichWithHashing(request.password(), salt);
         user.setUsername(request.username());
-        user.setPassword(preparePassword(request.password(), salt));
+        user.setPassword(enrichedPassword);
         user.setSalt(salt);
         user.setRoles(Set.of(userAuthService.getRoleUser()));
         userAuthService.save(user);
         return "User registered successfully!";
-    }
-
-    private String preparePassword(String password, char[] salt) {
-        String enrichedPassword = hashService.enrich(password, salt);
-        return passwordEncoder.encode(enrichedPassword);
     }
 }

@@ -2,7 +2,7 @@ FROM openjdk:22-jdk-slim
 
 WORKDIR /app
 
-COPY ./target/security.jar security.jar
+COPY ./target/*.jar app.jar
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar", "security.jar"]
+ENTRYPOINT ["java","-jar", "app.jar"]
