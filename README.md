@@ -1,4 +1,4 @@
-# Spring Security Jwt Auth
+# JWT Auth Service
 
 A Spring Boot application focused on implementing JWT authentication and refresh tokens, 
 built to explore and better understand spring security mechanisms.
